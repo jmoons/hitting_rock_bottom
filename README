@@ -1,4 +1,9 @@
 Setup reading of input file
 1) Get units of water, store in constant
-2) each row consists of a hash consisting of a depth => (initialized to zero) and a array representation of that row's map
+2) each row will be represented in a array representation of that row's map data split into individual characters
 3) each row becomes an element of an array - array[0] = top of map, array[last] = bottom of map
+4) Need to determine best data structure for depths of each column
+
+Iterate through the units of water
+1) Start at the last row of the array, and add water to lowest, left-most point. If row is full (before rock or wall), move up one row.
+2) When water is added, increment that columns depth record.
