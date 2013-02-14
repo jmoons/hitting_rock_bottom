@@ -1,0 +1,4 @@
+Setup reading of input file
+1) Get units of water, store in constant
+2) each row consists of a hash consisting of a depth => (initialized to zero) and a array representation of that row's map
+3) each row becomes an element of an array - array[0] = top of map, array[last] = bottom of map
