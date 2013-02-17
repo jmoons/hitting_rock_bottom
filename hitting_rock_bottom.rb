@@ -10,12 +10,12 @@ class HittingRockBottom
     @total_water_units      = File.open(args).readline
     @volume_of_each_column  = initialize_volume
     @current_water_position = find_initial_water_position
-    puts "DUDE: #{@cave_map[@current_water_position[:row]][@current_water_position[:position]]}"
 
   end
 
   def pump_water
     (1..@total_water_units.to_i).each do |water_unit|
+      place_water
     end
   end
 
@@ -24,6 +24,60 @@ class HittingRockBottom
   end
 
   private
+
+  def place_water
+    if flow_down?
+      puts "FLOW DOWN"
+    elsif flow_right?
+      puts "FLOW RIGHT"
+    elsif flow_up?
+    else
+      #TOP RIGHT
+    end
+    # HAVE METHODS TO GET POSITION DOWN, RIGHT, or ABOVE
+  end
+
+  def flow_down?
+    return false if @current_water_position[:row] == @cave_map.length - 1 # NOTE: This assumes a gap in the # floor is possible
+    candidate_position = {:row => @current_water_position[:row] + 1, :position => @current_water_position[:position]}
+    if @cave_map[candidate_position[:row]][candidate_position[:position]] == AIR_INDICATOR
+      #mark the cave map
+      @cave_map[candidate_position[:row]][candidate_position[:position]] = WATER_INDICATOR
+      #update current position
+      @current_water_position[:row]       = candidate_position[:row]
+      @current_water_position[:position]  = candidate_position[:position]
+      #increment volume (we have :position here, so a array of values associated to each column should be simple)
+      #TODO
+      return true
+    else
+      return false
+    end
+  end
+
+  def flow_right?
+    return false if @current_water_position[:position] == @cave_map.first.length - 1 # Far right
+    candidate_position = {:row => @current_water_position[:row], :position => @current_water_position[:position] + 1}
+    if @cave_map[candidate_position[:row]][candidate_position[:position]] == AIR_INDICATOR
+      #mark the cave map
+      @cave_map[candidate_position[:row]][candidate_position[:position]] = WATER_INDICATOR
+      #update current position
+      @current_water_position[:row]       = candidate_position[:row]
+      @current_water_position[:position]  = candidate_position[:position]
+      #increment volume
+      #TODO
+      return true
+    else
+      return false
+    end
+  end
+
+  def flow_up?
+    true
+  end
+
+  def get_candidate_position
+
+  end
 
   def find_initial_water_position
     water_position = {}
