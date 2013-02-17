@@ -42,10 +42,11 @@ class HittingRockBottom
     candidate_position = {:row => @current_water_position[:row] + 1, :position => @current_water_position[:position]}
     if @cave_map[candidate_position[:row]][candidate_position[:position]] == AIR_INDICATOR
       #mark the cave map
-      @cave_map[candidate_position[:row]][candidate_position[:position]] = WATER_INDICATOR
+      place_water_indicator(candidate_position)
+
       #update current position
-      @current_water_position[:row]       = candidate_position[:row]
-      @current_water_position[:position]  = candidate_position[:position]
+      update_current_water_position(candidate_position)
+
       #increment volume (we have :position here, so a array of values associated to each column should be simple)
       #TODO
       return true
@@ -59,10 +60,11 @@ class HittingRockBottom
     candidate_position = {:row => @current_water_position[:row], :position => @current_water_position[:position] + 1}
     if @cave_map[candidate_position[:row]][candidate_position[:position]] == AIR_INDICATOR
       #mark the cave map
-      @cave_map[candidate_position[:row]][candidate_position[:position]] = WATER_INDICATOR
+      place_water_indicator(candidate_position)
+
       #update current position
-      @current_water_position[:row]       = candidate_position[:row]
-      @current_water_position[:position]  = candidate_position[:position]
+      update_current_water_position(candidate_position)
+
       #increment volume
       #TODO
       return true
@@ -75,8 +77,13 @@ class HittingRockBottom
     true
   end
 
-  def get_candidate_position
+  def place_water_indicator(position)
+    @cave_map[position[:row]][position[:position]] = WATER_INDICATOR
+  end
 
+  def update_current_water_position(position)
+    @current_water_position[:row]       = position[:row]
+    @current_water_position[:position]  = position[:position]
   end
 
   def find_initial_water_position
