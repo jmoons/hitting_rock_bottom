@@ -30,10 +30,11 @@ class HittingRockBottom
     elsif flow_right?
       puts "FLOW RIGHT"
     elsif flow_up?
+      puts "FLOW UP"
     else
+      puts "NO MOVE"
       #TOP RIGHT
     end
-    # HAVE METHODS TO GET POSITION DOWN, RIGHT, or ABOVE
   end
 
   def flow_down?
@@ -73,9 +74,49 @@ class HittingRockBottom
   end
 
   def flow_up?
-    #make sure we are not at the top of the cave
     #go up one, row, scan for first '~' and see if you can put one to the right, if not, go up again
-    true
+    
+    #make sure we are not at the top of the cave
+    return false if @current_water_position[:row] == 0 #NOTE: This assumes a gap in the ceiling is possible
+    row_offset = 1
+    working = true
+    success = false
+
+    candidate_position = {:row => @current_water_position[:row] - row_offset,
+                          :column => find_first_water_in_row(@current_water_position[:row]) }
+    while working do
+      if @cave_map[candidate_position[:row]][candidate_position[:column]] == AIR_INDICATOR
+        #mark the cave map
+        place_water_indicator(candidate_position)
+
+        #update current position
+        update_current_water_position(candidate_position)
+
+        #increment volume
+        increment_column_volume(candidate_position[:column])
+
+        #break from while
+        success = true
+        working = false
+      else
+        #try next row up if possible
+        row_offset += 1
+        if @current_water_position[:row] - row_offset == 0
+          success = false
+          working = false
+        else
+          candidate_position = {:row => @current_water_position[:row] - row_offset,
+                                :column => find_first_water_in_row(@current_water_position[:row] - row_offset) }
+        end
+      end
+    end
+    return success
+  end
+
+  def find_first_water_in_row(row)
+    #NOTE - WHAT I NEED HERE IS LAST WATER IN THIS ROW
+    @cave_map[row].index(WATER_INDICATOR) + 1
+    # row.index(WATER_INDICATOR) + 1
   end
 
   def place_water_indicator(position)
@@ -83,7 +124,7 @@ class HittingRockBottom
   end
 
   def update_current_water_position(position)
-    @current_water_position[:row]       = position[:row]
+    @current_water_position[:row]     = position[:row]
     @current_water_position[:column]  = position[:column]
   end
 
