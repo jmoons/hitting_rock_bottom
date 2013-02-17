@@ -74,7 +74,7 @@ class HittingRockBottom
   end
 
   def flow_up?
-    #go up one, row, scan for first '~' and see if you can put one to the right, if not, go up again
+    #go up one, row, scan for last '~' and see if you can put one to the right, if not, go up again
     
     #make sure we are not at the top of the cave
     return false if @current_water_position[:row] == 0 #NOTE: This assumes a gap in the ceiling is possible
@@ -82,8 +82,9 @@ class HittingRockBottom
     working = true
     success = false
 
-    candidate_position = {:row => @current_water_position[:row] - row_offset,
-                          :column => find_first_water_in_row(@current_water_position[:row]) }
+    candidate_row       = @current_water_position[:row] - row_offset
+    candidate_position  = { :row => candidate_row,
+                            :column => find_last_water_in_row(candidate_row) }
     while working do
       if @cave_map[candidate_position[:row]][candidate_position[:column]] == AIR_INDICATOR
         #mark the cave map
@@ -105,17 +106,18 @@ class HittingRockBottom
           success = false
           working = false
         else
-          candidate_position = {:row => @current_water_position[:row] - row_offset,
-                                :column => find_first_water_in_row(@current_water_position[:row] - row_offset) }
+          candidate_row       = @current_water_position[:row] - row_offset
+          candidate_position  = { :row => candidate_row,
+                                  :column => find_last_water_in_row(candidate_row) }
         end
       end
     end
     return success
   end
 
-  def find_first_water_in_row(row)
-    #NOTE - WHAT I NEED HERE IS LAST WATER IN THIS ROW
-    @cave_map[row].index(WATER_INDICATOR) + 1
+  def find_last_water_in_row(row)
+    #NOTE - WHAT I NEED HERE IS LAST WATER IN THIS ROW AFTER the LAST ROCK FORMATION
+    @cave_map[row].rindex(WATER_INDICATOR) + 1
     # row.index(WATER_INDICATOR) + 1
   end
 
@@ -166,6 +168,6 @@ class HittingRockBottom
 end
 
 # HittingRockBottom.new("PuzzleNodeFiles/simple_cave.txt").pump_water
-test = HittingRockBottom.new("PuzzleNodeFiles/simple_cave.txt")
+test = HittingRockBottom.new("PuzzleNodeFiles/jmo_simple_cave.txt")
 test.pump_water
 test.print_map
