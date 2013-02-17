@@ -74,6 +74,8 @@ class HittingRockBottom
   end
 
   def flow_up?
+    #make sure we are not at the top of the cave
+    #go up one, row, scan for first '~' and see if you can put one to the right, if not, go up again
     true
   end
 
@@ -116,8 +118,7 @@ class HittingRockBottom
     end
     parsed_input_file
   end
-  
-  
+
 end
 
 # HittingRockBottom.new("PuzzleNodeFiles/simple_cave.txt").pump_water
