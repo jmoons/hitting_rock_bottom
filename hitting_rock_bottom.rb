@@ -1,4 +1,3 @@
-
 class HittingRockBottom
 
   WATER_INDICATOR = "~"
@@ -10,7 +9,6 @@ class HittingRockBottom
     @total_water_units      = File.open(args).readline
     @volume_of_each_column  = initialize_volume
     @current_water_position = find_initial_water_position
-
   end
 
   def pump_water
@@ -20,6 +18,7 @@ class HittingRockBottom
   end
 
   def print_map
+    puts @volume_of_each_column.inspect
     @cave_map.each{|row| puts row.inspect + "\n"}
   end
 
@@ -39,16 +38,16 @@ class HittingRockBottom
 
   def flow_down?
     return false if @current_water_position[:row] == @cave_map.length - 1 # NOTE: This assumes a gap in the # floor is possible
-    candidate_position = {:row => @current_water_position[:row] + 1, :position => @current_water_position[:position]}
-    if @cave_map[candidate_position[:row]][candidate_position[:position]] == AIR_INDICATOR
+    candidate_position = {:row => @current_water_position[:row] + 1, :column => @current_water_position[:column]}
+    if @cave_map[candidate_position[:row]][candidate_position[:column]] == AIR_INDICATOR
       #mark the cave map
       place_water_indicator(candidate_position)
 
       #update current position
       update_current_water_position(candidate_position)
 
-      #increment volume (we have :position here, so a array of values associated to each column should be simple)
-      #TODO
+      #increment volume (we have :column here, so a array of values associated to each column should be simple)
+      increment_column_volume(candidate_position[:column])
       return true
     else
       return false
@@ -56,9 +55,9 @@ class HittingRockBottom
   end
 
   def flow_right?
-    return false if @current_water_position[:position] == @cave_map.first.length - 1 # Far right
-    candidate_position = {:row => @current_water_position[:row], :position => @current_water_position[:position] + 1}
-    if @cave_map[candidate_position[:row]][candidate_position[:position]] == AIR_INDICATOR
+    return false if @current_water_position[:column] == @cave_map.first.length - 1 # Far right
+    candidate_position = {:row => @current_water_position[:row], :column => @current_water_position[:column] + 1}
+    if @cave_map[candidate_position[:row]][candidate_position[:column]] == AIR_INDICATOR
       #mark the cave map
       place_water_indicator(candidate_position)
 
@@ -66,7 +65,7 @@ class HittingRockBottom
       update_current_water_position(candidate_position)
 
       #increment volume
-      #TODO
+      increment_column_volume(candidate_position[:column])
       return true
     else
       return false
@@ -80,12 +79,16 @@ class HittingRockBottom
   end
 
   def place_water_indicator(position)
-    @cave_map[position[:row]][position[:position]] = WATER_INDICATOR
+    @cave_map[position[:row]][position[:column]] = WATER_INDICATOR
   end
 
   def update_current_water_position(position)
     @current_water_position[:row]       = position[:row]
-    @current_water_position[:position]  = position[:position]
+    @current_water_position[:column]  = position[:column]
+  end
+
+  def increment_column_volume(column)
+    @volume_of_each_column[column] += 1
   end
 
   def find_initial_water_position
@@ -95,7 +98,7 @@ class HittingRockBottom
       break if found_it
       map_row.each_with_index do |map_row_item, item_index|
         if map_row_item == WATER_INDICATOR
-          water_position = {:row => row_index, :position => item_index}
+          water_position = {:row => row_index, :column => item_index}
           found_it = true
           break
         end
@@ -105,8 +108,8 @@ class HittingRockBottom
   end
 
   def initialize_volume
-    volume = []
-    (1..@cave_map.first.length).each{|column| volume << 0}
+    volume = [1] #This assumes we always start with one initial volume of water
+    (1...@cave_map.first.length).each{|column| volume << 0}
     volume
   end
 
