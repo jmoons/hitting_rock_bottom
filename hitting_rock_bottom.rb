@@ -6,14 +6,14 @@ class HittingRockBottom
 
   def initialize(args)
     @cave_map               = parse_input_file(args)
-    @total_water_units      = File.open(args).readline
+    @total_water_units      = File.open(args).readline.to_i
     @volume_of_each_column  = initialize_volume
     @current_water_position = find_initial_water_position
   end
 
   def pump_water
-    (1..@total_water_units.to_i).each do |water_unit|
-      place_water
+    (1..@total_water_units).each do |water_unit|
+      place_water(water_unit)
     end
   end
 
@@ -22,14 +22,26 @@ class HittingRockBottom
     @cave_map.each{|row| puts row.inspect + "\n"}
   end
 
+  def print_output
+    output = ""
+    @volume_of_each_column.each do |volume_unit|
+      if volume_unit.is_a?(Integer)
+        output << "#{volume_unit} "
+      else
+        output << "~ "
+      end
+    end
+    puts output
+  end
+
   private
 
-  def place_water
-    if flow_down?
+  def place_water(water_unit)
+    if flow_down?(water_unit)
       puts "FLOW DOWN"
-    elsif flow_right?
+    elsif flow_right?(water_unit)
       puts "FLOW RIGHT"
-    elsif flow_up?
+    elsif flow_up?(water_unit)
       puts "FLOW UP"
     else
       puts "NO MOVE"
@@ -37,7 +49,7 @@ class HittingRockBottom
     end
   end
 
-  def flow_down?
+  def flow_down?(water_unit)
     return false if @current_water_position[:row] == @cave_map.length - 1 # NOTE: This assumes a gap in the # floor is possible
     candidate_position = {:row => @current_water_position[:row] + 1, :column => @current_water_position[:column]}
     if @cave_map[candidate_position[:row]][candidate_position[:column]] == AIR_INDICATOR
@@ -48,14 +60,14 @@ class HittingRockBottom
       update_current_water_position(candidate_position)
 
       #increment volume (we have :column here, so a array of values associated to each column should be simple)
-      increment_column_volume(candidate_position[:column])
+      increment_column_volume(candidate_position[:column], water_unit)
       return true
     else
       return false
     end
   end
 
-  def flow_right?
+  def flow_right?(water_unit)
     return false if @current_water_position[:column] == @cave_map.first.length - 1 # Far right
     candidate_position = {:row => @current_water_position[:row], :column => @current_water_position[:column] + 1}
     if @cave_map[candidate_position[:row]][candidate_position[:column]] == AIR_INDICATOR
@@ -66,14 +78,14 @@ class HittingRockBottom
       update_current_water_position(candidate_position)
 
       #increment volume
-      increment_column_volume(candidate_position[:column])
+      increment_column_volume(candidate_position[:column], water_unit)
       return true
     else
       return false
     end
   end
 
-  def flow_up?
+  def flow_up?(water_unit)
     #go up one, row, scan for last '~' and see if you can put one to the right, if not, go up again
     
     #make sure we are not at the top of the cave
@@ -82,9 +94,9 @@ class HittingRockBottom
     working = true
     success = false
 
-    candidate_row       = @current_water_position[:row] - row_offset
-    candidate_position  = { :row => candidate_row,
-                            :column => find_last_water_in_row(candidate_row) }
+    candidate_row_index = @current_water_position[:row] - row_offset
+    candidate_position  = { :row => candidate_row_index,
+                            :column => find_last_water_in_row(candidate_row_index) }
     while working do
       if @cave_map[candidate_position[:row]][candidate_position[:column]] == AIR_INDICATOR
         #mark the cave map
@@ -94,7 +106,7 @@ class HittingRockBottom
         update_current_water_position(candidate_position)
 
         #increment volume
-        increment_column_volume(candidate_position[:column])
+        increment_column_volume(candidate_position[:column], water_unit)
 
         #break from while
         success = true
@@ -106,19 +118,17 @@ class HittingRockBottom
           success = false
           working = false
         else
-          candidate_row       = @current_water_position[:row] - row_offset
-          candidate_position  = { :row => candidate_row,
-                                  :column => find_last_water_in_row(candidate_row) }
+          candidate_row_index = @current_water_position[:row] - row_offset
+          candidate_position  = { :row => candidate_row_index,
+                                  :column => find_last_water_in_row(candidate_row_index) }
         end
       end
     end
     return success
   end
 
-  def find_last_water_in_row(row)
-    #NOTE - WHAT I NEED HERE IS LAST WATER IN THIS ROW AFTER the LAST ROCK FORMATION
-    @cave_map[row].rindex(WATER_INDICATOR) + 1
-    # row.index(WATER_INDICATOR) + 1
+  def find_last_water_in_row(row_index)
+    @cave_map[row_index].rindex(WATER_INDICATOR) + 1
   end
 
   def place_water_indicator(position)
@@ -130,8 +140,14 @@ class HittingRockBottom
     @current_water_position[:column]  = position[:column]
   end
 
-  def increment_column_volume(column)
+  def increment_column_volume(column, water_unit)
     @volume_of_each_column[column] += 1
+    if (water_unit == @total_water_units)
+      #Check to see if we are mid-flow, if yes, turn that value to a string
+      if (@cave_map[@current_water_position[:row] + 1][@current_water_position[:column]]) == AIR_INDICATOR
+        @volume_of_each_column[column] = @volume_of_each_column[column].to_s
+      end
+    end
   end
 
   def find_initial_water_position
@@ -167,7 +183,7 @@ class HittingRockBottom
 
 end
 
-# HittingRockBottom.new("PuzzleNodeFiles/simple_cave.txt").pump_water
-test = HittingRockBottom.new("PuzzleNodeFiles/jmo_simple_cave.txt")
+test = HittingRockBottom.new("PuzzleNodeFiles/complex_cave.txt")
 test.pump_water
-test.print_map
+# test.print_map
+test.print_output
